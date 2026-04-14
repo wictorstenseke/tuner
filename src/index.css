@@ -12,7 +12,6 @@ html, body {
 }
 
 body {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   background: #1a1a1a;
   background-image:
     radial-gradient(ellipse at 50% 0%, rgba(40, 40, 50, 0.8) 0%, transparent 70%),
@@ -37,5 +36,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   perspective: 1200px;
 }
