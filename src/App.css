@@ -3,7 +3,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 20px calc(76px + env(safe-area-inset-bottom));
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
   width: 100%;
   max-width: 400px;
   perspective: 900px;
@@ -14,6 +15,7 @@
   position: relative;
   width: 100%;
   max-width: 320px;
+  margin-bottom: 56px; /* account for side wall in layout so flexbox centers correctly */
   transform-style: preserve-3d;
   transform: rotateX(2deg);
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
