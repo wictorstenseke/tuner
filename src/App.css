@@ -6,6 +6,7 @@
   padding: 20px;
   width: 100%;
   max-width: 400px;
+  perspective: 900px;
 }
 
 /* ── Pedal Body ── */
@@ -15,18 +16,22 @@
   max-width: 320px;
   background: linear-gradient(175deg, #cc2222 0%, #aa1111 40%, #881010 100%);
   border-radius: 16px;
-  padding: 24px 20px 28px;
+  padding: 24px 20px 40px;
   box-shadow:
     0 2px 0 0 #660808,
     0 4px 0 0 #440404,
-    0 8px 20px rgba(0, 0, 0, 0.6),
+    0 12px 30px rgba(0, 0, 0, 0.7),
+    0 20px 50px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
     inset 0 -1px 0 rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   overflow: hidden;
+  transform-style: preserve-3d;
+  transform: rotateX(2deg);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pedal::before {
@@ -53,9 +58,10 @@
   background: radial-gradient(circle at 40% 35%, #e0e0e0, #888 60%, #555);
   border-radius: 50%;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.6),
     inset 0 0 1px rgba(255, 255, 255, 0.4);
   z-index: 10;
+  transform: translateZ(4px);
 }
 
 .screw-slot {
@@ -89,6 +95,15 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
+.model {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 3px;
+  display: block;
+  margin-top: 2px;
+}
+
 /* ── Display ── */
 .display {
   width: 100%;
@@ -96,8 +111,10 @@
   border-radius: 10px;
   padding: 3px;
   box-shadow:
-    inset 0 2px 6px rgba(0, 0, 0, 0.8),
+    inset 0 3px 8px rgba(0, 0, 0, 0.9),
+    inset 0 1px 2px rgba(0, 0, 0, 0.5),
     0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateZ(-2px);
 }
 
 .display-inner {
@@ -205,13 +222,15 @@
 /* ── String Indicators ── */
 .string-indicators {
   display: flex;
-  gap: 8px;
-  justify-content: center;
+  gap: 0;
+  justify-content: space-between;
+  width: 100%;
+  transform: translateZ(3px);
 }
 
 .string-dot {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(180deg, #222 0%, #1a1a1a 100%);
   border: 2px solid #333;
@@ -237,83 +256,25 @@
   text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
-/* ── Pedal Name ── */
-.pedal-name {
-  text-align: center;
-  margin: 4px 0;
-}
-
-.pedal-name-main {
-  font-family: 'Russo One', 'Orbitron', sans-serif;
-  font-size: 32px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.95);
-  letter-spacing: 6px;
-  display: block;
-  text-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-.pedal-name-sub {
-  font-family: 'Orbitron', monospace;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 3px;
-  display: block;
-  margin-top: 2px;
-}
-
-/* ── Footswitch ── */
-.footswitch {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(180deg, #e0e0e0 0%, #aaa 30%, #888 70%, #666 100%);
-  cursor: pointer;
-  padding: 6px;
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.5),
-    0 2px 0 #555,
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: transform 0.05s, box-shadow 0.05s;
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.footswitch:active {
-  transform: translateY(2px);
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    0 1px 0 #555,
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.footswitch-top {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, #ccc, #999 40%, #777 80%);
+/* ── Mid Section (labels + name) ── */
+.pedal-mid {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+  width: 100%;
+  padding: 0 4px;
 }
 
-.footswitch-texture {
-  width: 60%;
-  height: 60%;
-  border-radius: 50%;
-  background:
-    repeating-conic-gradient(
-      from 0deg,
-      rgba(0, 0, 0, 0.08) 0deg 10deg,
-      transparent 10deg 20deg
-    );
+.jack-label {
+  font-family: 'Russo One', 'Orbitron', sans-serif;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
-.footswitch.active .footswitch-top {
-  background: radial-gradient(circle at 40% 35%, #ddd, #aaa 40%, #888 80%);
+.jack-label .arrow {
+  font-size: 10px;
 }
 
 /* ── Status LED ── */
@@ -324,6 +285,7 @@
   background: #331111;
   border: 1px solid rgba(0, 0, 0, 0.3);
   transition: all 0.15s;
+  transform: translateZ(5px);
 }
 
 .status-led.on {
@@ -331,24 +293,84 @@
   box-shadow: 0 0 8px #ff0000, 0 0 16px rgba(255, 0, 0, 0.4);
 }
 
-/* ── Bottom Labels ── */
-.pedal-bottom {
-  display: flex;
-  justify-content: space-between;
+/* ── Footswitch ── */
+.footswitch {
   width: 100%;
-  padding: 0 4px;
+  max-width: none;
+  aspect-ratio: 1.6;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transform-style: preserve-3d;
+  transform: translateZ(14px);
+  transition: transform 0.1s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.1s;
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 30%, #1e1e1e 70%, #151515 100%);
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    0 4px 0 #111,
+    0 5px 0 #0a0a0a,
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
 }
 
-.jack-label {
-  font-family: 'Russo One', 'Orbitron', sans-serif;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 2px;
-  text-transform: uppercase;
+.footswitch:active {
+  transform: translateZ(2px) translateY(4px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.7),
+    0 1px 0 #111,
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
 }
 
-.jack-label .arrow {
-  font-size: 11px;
+.footswitch-cap {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(80, 80, 80, 0.3) 0%, transparent 60%),
+    linear-gradient(180deg, #333 0%, #222 40%, #1a1a1a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(2px);
+}
+
+.footswitch-texture {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.25) 3px,
+      rgba(0, 0, 0, 0.25) 4px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.25) 3px,
+      rgba(0, 0, 0, 0.25) 4px
+    ),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 3px,
+      rgba(255, 255, 255, 0.03) 3px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+}
+
+.footswitch.active {
+  background: linear-gradient(180deg, #3d3d3d 0%, #2d2d2d 30%, #202020 70%, #181818 100%);
 }
 
 /* ── Responsive ── */
@@ -366,15 +388,6 @@
   .note-display {
     font-size: 52px;
   }
-
-  .footswitch {
-    width: 68px;
-    height: 68px;
-  }
-
-  .pedal-name-main {
-    font-size: 26px;
-  }
 }
 
 @media (max-height: 600px) {
@@ -390,10 +403,5 @@
     width: 30px;
     height: 30px;
     font-size: 10px;
-  }
-
-  .footswitch {
-    width: 60px;
-    height: 60px;
   }
 }

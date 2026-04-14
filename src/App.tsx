@@ -67,11 +67,10 @@ export default function App() {
       <div className="pedal">
         <Screw className="top-left" />
         <Screw className="top-right" />
-        <Screw className="bottom-left" />
-        <Screw className="bottom-right" />
 
         <div className="pedal-top-label">
           <span className="brand">CHROMATIC</span>
+          <span className="model">OS-1</span>
         </div>
 
         <div className="display">
@@ -102,29 +101,24 @@ export default function App() {
           ))}
         </div>
 
-        <div className="pedal-name">
-          <span className="pedal-name-sub">OS-1</span>
+        <div className="pedal-mid">
+          <div className="jack-label left">
+            <span className="arrow">&larr;</span> OUTPUT
+          </div>
+          <div className={`status-led ${tuner.isListening ? 'on' : ''}`} />
+          <div className="jack-label right">
+            INPUT <span className="arrow">&larr;</span>
+          </div>
         </div>
 
         <button
           className={`footswitch ${tuner.isListening ? 'active' : ''}`}
           onClick={tuner.toggle}
         >
-          <div className="footswitch-top">
+          <div className="footswitch-cap">
             <div className="footswitch-texture" />
           </div>
         </button>
-
-        <div className={`status-led ${tuner.isListening ? 'on' : ''}`} />
-
-        <div className="pedal-bottom">
-          <div className="jack-label left">
-            <span className="arrow">&larr;</span> OUTPUT
-          </div>
-          <div className="jack-label right">
-            INPUT <span className="arrow">&rarr;</span>
-          </div>
-        </div>
       </div>
     </div>
   )
