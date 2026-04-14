@@ -191,6 +191,19 @@
   letter-spacing: 1px;
 }
 
+/* ── Error Display ── */
+.error-display {
+  position: relative;
+  z-index: 1;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #ff4444;
+  text-align: center;
+  margin-top: 8px;
+  padding: 0 8px;
+  text-shadow: 0 0 6px rgba(255, 68, 68, 0.4);
+}
+
 /* ── String Indicators ── */
 .string-indicators {
   display: flex;

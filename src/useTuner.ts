@@ -21,6 +21,7 @@ export interface TunerState {
   octave: number | null
   clarity: number
   closestString: (typeof GUITAR_STRINGS)[number] | null
+  error: string | null
 }
 
 function frequencyToNote(freq: number) {
@@ -55,6 +56,7 @@ export function useTuner() {
     octave: null,
     clarity: 0,
     closestString: null,
+    error: null,
   })
 
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -71,56 +73,67 @@ export function useTuner() {
   }, [])
 
   const start = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-      },
-    })
-    streamRef.current = stream
-
-    const audioContext = new AudioContext()
-    audioContextRef.current = audioContext
-
-    const source = audioContext.createMediaStreamSource(stream)
-    const analyser = audioContext.createAnalyser()
-    analyser.fftSize = 4096
-    source.connect(analyser)
-    analyserRef.current = analyser
-
-    const detector = PitchDetector.forFloat32Array(analyser.fftSize)
-    const buffer = new Float32Array(analyser.fftSize)
-
-    setState((s) => ({ ...s, isListening: true }))
-
-    const detect = () => {
-      analyser.getFloatTimeDomainData(buffer)
-      const [pitch, clarity] = detector.findPitch(buffer, audioContext.sampleRate)
-
-      if (clarity > 0.85 && pitch > 60 && pitch < 1200) {
-        const { note, octave, cents } = frequencyToNote(pitch)
-        const closestString = findClosestString(pitch)
-        setState({
-          isListening: true,
-          note,
-          frequency: Math.round(pitch * 10) / 10,
-          cents: Math.round(cents),
-          octave,
-          clarity: Math.round(clarity * 100) / 100,
-          closestString,
-        })
-      } else {
-        setState((s) => ({
-          ...s,
-          clarity: Math.round(clarity * 100) / 100,
-        }))
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setState((s) => ({ ...s, error: 'Mic not available. Use HTTPS or localhost.' }))
+        return
       }
 
-      rafRef.current = requestAnimationFrame(detect)
-    }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      })
+      streamRef.current = stream
 
-    detect()
+      const audioContext = new AudioContext()
+      audioContextRef.current = audioContext
+
+      const source = audioContext.createMediaStreamSource(stream)
+      const analyser = audioContext.createAnalyser()
+      analyser.fftSize = 4096
+      source.connect(analyser)
+      analyserRef.current = analyser
+
+      const detector = PitchDetector.forFloat32Array(analyser.fftSize)
+      const buffer = new Float32Array(analyser.fftSize)
+
+      setState((s) => ({ ...s, isListening: true, error: null }))
+
+      const detect = () => {
+        analyser.getFloatTimeDomainData(buffer)
+        const [pitch, clarity] = detector.findPitch(buffer, audioContext.sampleRate)
+
+        if (clarity > 0.85 && pitch > 60 && pitch < 1200) {
+          const { note, octave, cents } = frequencyToNote(pitch)
+          const closestString = findClosestString(pitch)
+          setState({
+            isListening: true,
+            note,
+            frequency: Math.round(pitch * 10) / 10,
+            cents: Math.round(cents),
+            octave,
+            clarity: Math.round(clarity * 100) / 100,
+            closestString,
+            error: null,
+          })
+        } else {
+          setState((s) => ({
+            ...s,
+            clarity: Math.round(clarity * 100) / 100,
+          }))
+        }
+
+        rafRef.current = requestAnimationFrame(detect)
+      }
+
+      detect()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Mic access denied'
+      setState((s) => ({ ...s, error: msg }))
+    }
   }, [])
 
   const toggle = useCallback(() => {

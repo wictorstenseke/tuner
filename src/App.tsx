@@ -108,6 +108,10 @@ export default function App() {
             <div className="cents-display">
               {tuner.note ? `${tuner.cents > 0 ? '+' : ''}${tuner.cents}\u00A2` : ''}
             </div>
+
+            {tuner.error && (
+              <div className="error-display">{tuner.error}</div>
+            )}
           </div>
         </div>
 
