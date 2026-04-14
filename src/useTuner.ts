@@ -102,6 +102,10 @@ export function useTuner() {
 
       setState((s) => ({ ...s, isListening: true, error: null }))
 
+      let smoothedCents = 0
+      let lastNote = ''
+      const EMA_ALPHA = 0.06 // lower = smoother, higher = more responsive
+
       const detect = () => {
         analyser.getFloatTimeDomainData(buffer)
         const [pitch, clarity] = detector.findPitch(buffer, audioContext.sampleRate)
@@ -109,11 +113,23 @@ export function useTuner() {
         if (clarity > 0.85 && pitch > 60 && pitch < 1200) {
           const { note, octave, cents } = frequencyToNote(pitch)
           const closestString = findClosestString(pitch)
+
+          // Reset smoothing on note change
+          if (note !== lastNote) {
+            smoothedCents = cents
+            lastNote = note
+          } else {
+            smoothedCents = smoothedCents + EMA_ALPHA * (cents - smoothedCents)
+          }
+
+          // Hysteresis: only update display if change is meaningful
+          const displayCents = Math.round(smoothedCents)
+
           setState({
             isListening: true,
             note,
             frequency: Math.round(pitch * 10) / 10,
-            cents: Math.round(cents),
+            cents: displayCents,
             octave,
             clarity: Math.round(clarity * 100) / 100,
             closestString,

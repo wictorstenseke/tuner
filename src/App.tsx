@@ -2,32 +2,50 @@ import { useTuner, GUITAR_STRINGS } from './useTuner'
 import './App.css'
 
 function CentsStrip({ cents, active }: { cents: number; active: boolean }) {
-  const totalDots = 21
+  const totalDots = 23
   const center = Math.floor(totalDots / 2)
 
-  const sign = !active ? '' : cents > 3 ? '+' : cents < -3 ? '\u2212' : ''
+  const inTuneZone = active && Math.abs(cents) < 3
+  const label = !active ? '\u00A0' : inTuneZone ? 'IN TUNE' : cents < 0 ? 'FLAT' : 'SHARP'
 
   return (
     <div className="cents-strip">
       <div className="cents-dots">
         {Array.from({ length: totalDots }, (_, i) => {
+          if (i === center) {
+            const inZone = active && Math.abs(cents) < 3
+            return (
+              <div
+                key="center-block"
+                className={`center-block ${inZone ? 'lit' : ''}`}
+                style={{
+                  background: inZone ? '#00ff88' : '#333',
+                  boxShadow: inZone ? '0 0 8px #00ff88' : 'none',
+                }}
+              />
+            )
+          }
           const position = ((i - center) / center) * 50
-          const isCenter = i === center
+          const isCenterBlock = Math.abs(i - center) <= 1
+          if (isCenterBlock) return null
+
           const dist = active ? Math.abs(position - cents) : Infinity
-          const lit = dist < 4
+          const lit = dist < 6
 
           let color = '#333'
           if (lit) {
-            if (isCenter && Math.abs(cents) < 3) color = '#00ff88'
-            else if (Math.abs(position) < 10) color = '#00cc44'
+            if (Math.abs(position) < 12) color = '#00cc44'
             else if (Math.abs(position) >= 40) color = '#ff2222'
             else color = '#ffaa00'
           }
 
+          const beforeCenter = i === center - 2
+          const afterCenter = i === center + 2
+
           return (
             <div
               key={i}
-              className={`cents-dot ${isCenter ? 'center' : ''} ${lit ? 'lit' : ''}`}
+              className={`cents-dot ${lit ? 'lit' : ''} ${beforeCenter ? 'before-center' : ''} ${afterCenter ? 'after-center' : ''}`}
               style={{
                 background: color,
                 boxShadow: lit ? `0 0 6px ${color}` : 'none',
@@ -36,7 +54,7 @@ function CentsStrip({ cents, active }: { cents: number; active: boolean }) {
           )
         })}
       </div>
-      {sign && <div className="cents-sign">{sign}</div>}
+      <div className={`cents-label-text ${inTuneZone ? 'in-tune' : ''}`}>{label}</div>
     </div>
   )
 }
