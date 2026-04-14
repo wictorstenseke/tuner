@@ -3,37 +3,65 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 20px 20px calc(76px + env(safe-area-inset-bottom));
   width: 100%;
   max-width: 400px;
   perspective: 900px;
 }
 
-/* ── Pedal Body ── */
-.pedal {
+/* ── Pedal Wrapper (3D container) ── */
+.pedal-wrapper {
   position: relative;
   width: 100%;
   max-width: 320px;
-  background: linear-gradient(175deg, #cc2222 0%, #aa1111 40%, #881010 100%);
+  transform-style: preserve-3d;
+  transform: rotateX(2deg);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Side Wall (visible thickness) ── */
+.pedal-side {
+  position: absolute;
+  inset: 4px 2px -56px 2px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #6e0c0c 0%, #3a0505 40%, #1a0202 100%);
+  transform: translateZ(-2px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.6),
+    0 20px 50px rgba(0, 0, 0, 0.35),
+    0 30px 70px rgba(0, 0, 0, 0.15),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    inset 1px 0 0 rgba(255, 80, 80, 0.08),
+    inset -1px 0 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ── Pedal Body (top face) ── */
+.pedal {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(175deg, #d42a2a 0%, #bb1515 15%, #aa1111 40%, #881010 85%, #6e0c0c 100%);
   border-radius: 16px;
   padding: 24px 20px 40px;
   box-shadow:
-    0 2px 0 0 #660808,
-    0 4px 0 0 #440404,
-    0 12px 30px rgba(0, 0, 0, 0.7),
-    0 20px 50px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    /* Top highlight edge — light source above */
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 4px 6px rgba(255, 255, 255, 0.05),
+    /* Side highlights for roundness */
+    inset 2px 0 4px rgba(255, 255, 255, 0.06),
+    inset -2px 0 4px rgba(255, 255, 255, 0.03),
+    /* Bottom shadow edge */
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 18px;
   overflow: hidden;
   transform-style: preserve-3d;
-  transform: rotateX(2deg);
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
 }
 
+/* Subtle surface texture */
 .pedal::before {
   content: '';
   position: absolute;
@@ -46,6 +74,16 @@
       rgba(0, 0, 0, 0.02) 1px,
       rgba(0, 0, 0, 0.02) 2px
     );
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+/* Top-down light sheen across body */
+.pedal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 30%, transparent 80%, rgba(0,0,0,0.1) 100%);
   border-radius: 16px;
   pointer-events: none;
 }
@@ -111,10 +149,23 @@
   border-radius: 10px;
   padding: 3px;
   box-shadow:
-    inset 0 3px 8px rgba(0, 0, 0, 0.9),
-    inset 0 1px 2px rgba(0, 0, 0, 0.5),
-    0 1px 0 rgba(255, 255, 255, 0.08);
+    /* Deep recess into pedal body */
+    inset 0 4px 10px rgba(0, 0, 0, 0.95),
+    inset 0 2px 3px rgba(0, 0, 0, 0.6),
+    inset 2px 0 6px rgba(0, 0, 0, 0.5),
+    inset -2px 0 6px rgba(0, 0, 0, 0.5),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.3),
+    /* Embossed lip — light catches bottom/right edge */
+    0 -2px 1px rgba(0, 0, 0, 0.5),
+    0 2px 0 rgba(255, 255, 255, 0.15),
+    0 3px 2px rgba(255, 255, 255, 0.06),
+    2px 0 0 rgba(255, 255, 255, 0.04),
+    -2px 0 0 rgba(0, 0, 0, 0.2),
+    /* Outer glow/spread for depth */
+    0 0 8px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.2);
   transform: translateZ(-2px);
+  position: relative;
 }
 
 .display-inner {
@@ -288,16 +339,43 @@
   padding: 0 4px;
 }
 
-.jack-label {
+.jack-btn {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
   font-family: 'Russo One', 'Orbitron', sans-serif;
   font-size: 8px;
   color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 2px;
+  letter-spacing: 4px;
   text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.jack-label .arrow {
-  font-size: 10px;
+.jack-btn:active {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.jack-arrow {
+  width: 18px;
+  height: 9px;
+  flex-shrink: 0;
+}
+
+.tuning-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  color: rgba(255, 170, 0, 0.5);
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 /* ── Status LED ── */
@@ -321,21 +399,21 @@
   width: 100%;
   max-width: none;
   aspect-ratio: 1.6;
-  border-radius: 14px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   position: relative;
   -webkit-tap-highlight-color: transparent;
   transform-style: preserve-3d;
   transform: translateZ(14px);
   transition: transform 0.1s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.1s;
-  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 30%, #1e1e1e 70%, #151515 100%);
+  background: linear-gradient(180deg, #444 0%, #2a2a2a 20%, #1a1a1a 80%, #111 100%);
   box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.7),
     0 4px 0 #111,
     0 5px 0 #0a0a0a,
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
     inset 0 -1px 0 rgba(0, 0, 0, 0.5);
 }
 
@@ -351,23 +429,27 @@
 .footswitch-cap {
   width: 100%;
   height: 100%;
-  border-radius: 14px;
-  background:
-    radial-gradient(ellipse at 50% 30%, rgba(80, 80, 80, 0.3) 0%, transparent 60%),
-    linear-gradient(180deg, #333 0%, #222 40%, #1a1a1a 100%);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #2e2e2e 0%, #1e1e1e 40%, #181818 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   padding: 0;
-  transform-style: preserve-3d;
-  transform: translateZ(2px);
+  position: relative;
+  overflow: hidden;
+  /* Embossed rubber edge — light catching top/left, shadow bottom/right */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    inset -1px 0 0 rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.04);
 }
 
 .footswitch-texture {
   width: 100%;
   height: 100%;
-  border-radius: 14px;
+  border-radius: 8px;
   background:
     repeating-linear-gradient(
       45deg,
@@ -390,10 +472,25 @@
       rgba(255, 255, 255, 0.03) 3px,
       rgba(255, 255, 255, 0.03) 4px
     );
+  mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 100%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 100%);
+}
+
+/* Highlight sheen across top of rubber */
+.footswitch-cap::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+  border-radius: 8px 8px 0 0;
+  pointer-events: none;
 }
 
 .footswitch.active {
-  background: linear-gradient(180deg, #3d3d3d 0%, #2d2d2d 30%, #202020 70%, #181818 100%);
+  background: linear-gradient(180deg, #444 0%, #2d2d2d 20%, #1c1c1c 80%, #131313 100%);
 }
 
 /* ── Responsive ── */

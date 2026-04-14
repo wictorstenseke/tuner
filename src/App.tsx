@@ -1,4 +1,4 @@
-import { useTuner, GUITAR_STRINGS } from './useTuner'
+import { useTuner, TUNINGS } from './useTuner'
 import './App.css'
 
 function CentsStrip({ cents, active }: { cents: number; active: boolean }) {
@@ -77,22 +77,25 @@ function StringIndicator({ note, isActive }: { note: string; isActive: boolean }
 
 export default function App() {
   const tuner = useTuner()
+  const currentTuning = TUNINGS[tuner.tuningIndex]
 
   const inTune = tuner.note && Math.abs(tuner.cents) < 5
 
   return (
     <div className="pedal-board">
+      <div className="pedal-wrapper">
+      <div className="pedal-side" />
       <div className="pedal">
         <Screw className="top-left" />
         <Screw className="top-right" />
 
         <div className="pedal-top-label">
-          <span className="brand">CHROMATIC</span>
-          <span className="model">OS-1</span>
+          <span className="brand">LLESNOTE-1</span>
         </div>
 
         <div className="display">
           <div className="display-inner">
+            <div className="tuning-label">{currentTuning.label}</div>
             <div className={`note-display ${inTune ? 'in-tune' : ''}`}>
               {tuner.note || '--'}
             </div>
@@ -106,9 +109,9 @@ export default function App() {
         </div>
 
         <div className="string-indicators">
-          {GUITAR_STRINGS.map((s) => (
+          {currentTuning.strings.map((s, i) => (
             <StringIndicator
-              key={`${s.note}${s.octave}`}
+              key={`${s.note}${s.octave}-${i}`}
               note={s.note}
               isActive={
                 !!tuner.closestString &&
@@ -120,13 +123,21 @@ export default function App() {
         </div>
 
         <div className="pedal-mid">
-          <div className="jack-label left">
-            <span className="arrow">&larr;</span> OUTPUT
-          </div>
+          <button className="jack-btn left" onClick={tuner.prevTuning}>
+            <svg className="jack-arrow" viewBox="0 0 20 10" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="5" x2="1" y2="5" />
+              <polyline points="6,1 1,5 6,9" />
+            </svg>
+            OUTPUT
+          </button>
           <div className={`status-led ${tuner.isListening ? 'on' : ''}`} />
-          <div className="jack-label right">
-            INPUT <span className="arrow">&larr;</span>
-          </div>
+          <button className="jack-btn right" onClick={tuner.nextTuning}>
+            INPUT
+            <svg className="jack-arrow" viewBox="0 0 20 10" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="5" x2="1" y2="5" />
+              <polyline points="6,1 1,5 6,9" />
+            </svg>
+          </button>
         </div>
 
         <button
@@ -137,6 +148,7 @@ export default function App() {
             <div className="footswitch-texture" />
           </div>
         </button>
+      </div>
       </div>
     </div>
   )
