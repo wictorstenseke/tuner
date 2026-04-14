@@ -34,7 +34,7 @@ function frequencyToNote(freq: number) {
 }
 
 function findClosestString(freq: number) {
-  let closest = GUITAR_STRINGS[0]
+  let closest: (typeof GUITAR_STRINGS)[number] = GUITAR_STRINGS[0]
   let minDist = Infinity
   for (const s of GUITAR_STRINGS) {
     const dist = Math.abs(1200 * Math.log2(freq / s.freq))
