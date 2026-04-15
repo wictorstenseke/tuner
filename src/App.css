@@ -23,14 +23,14 @@
   position: absolute;
   inset: 4px 2px -56px 2px;
   border-radius: 14px;
-  background: linear-gradient(180deg, #6e0c0c 0%, #3a0505 40%, #1a0202 100%);
+  background: var(--side-gradient, linear-gradient(180deg, #6e0c0c 0%, #3a0505 40%, #1a0202 100%));
   transform: translateZ(-2px);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.6),
     0 20px 50px rgba(0, 0, 0, 0.35),
     0 30px 70px rgba(0, 0, 0, 0.15),
     inset 0 -2px 4px rgba(0, 0, 0, 0.5),
-    inset 1px 0 0 rgba(255, 80, 80, 0.08),
+    inset 1px 0 0 var(--side-accent, rgba(255, 80, 80, 0.08)),
     inset -1px 0 0 rgba(0, 0, 0, 0.3);
 }
 
@@ -38,7 +38,7 @@
 .pedal {
   position: relative;
   width: 100%;
-  background: linear-gradient(175deg, #d42a2a 0%, #bb1515 15%, #aa1111 40%, #881010 85%, #6e0c0c 100%);
+  background: var(--pedal-gradient, linear-gradient(175deg, #d42a2a 0%, #bb1515 15%, #aa1111 40%, #881010 85%, #6e0c0c 100%));
   border-radius: 16px;
   padding: 24px 20px 40px;
   box-shadow:
@@ -149,9 +149,9 @@
   font-family: 'Russo One', 'Orbitron', sans-serif;
   font-size: 11px;
   letter-spacing: 4px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--brand-color, rgba(255, 255, 255, 0.85));
   text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: var(--brand-shadow, 0 1px 2px rgba(0, 0, 0, 0.4));
 }
 
 .model {
@@ -230,8 +230,8 @@
 }
 
 .note-display.in-tune {
-  color: #00ff88;
-  text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+  color: var(--accent, #00ff88);
+  text-shadow: 0 0 30px var(--accent-glow, rgba(0, 255, 136, 0.6));
 }
 
 /* ── Arc Meter ── */
@@ -288,11 +288,11 @@
 }
 
 .string-dot.active {
-  background: linear-gradient(180deg, #00cc44 0%, #009933 100%);
-  border-color: #00ff55;
+  background: linear-gradient(180deg, var(--accent-dark, #00cc44) 0%, var(--accent-dark, #009933) 100%);
+  border-color: var(--accent, #00ff55);
   color: #fff;
   box-shadow:
-    0 0 10px rgba(0, 204, 68, 0.5),
+    0 0 10px var(--accent-glow, rgba(0, 204, 68, 0.5)),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
 }
@@ -360,20 +360,15 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #113311;
+  background: var(--led-off, #113311);
   border: 1px solid rgba(0, 0, 0, 0.3);
   transition: all 0.15s;
   transform: translateZ(5px);
 }
 
 .status-led.on {
-  background: radial-gradient(circle at 40% 35%, #ffffff, #44ffaa 40%, #00ff66 70%);
-  box-shadow:
-    0 0 8px #00ff66,
-    0 0 18px rgba(0, 255, 102, 0.7),
-    0 0 36px rgba(0, 255, 102, 0.4),
-    0 0 56px rgba(0, 255, 102, 0.15),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.15);
+  background: var(--led-gradient, radial-gradient(circle at 40% 35%, #ffffff, #44ffaa 40%, #00ff66 70%));
+  box-shadow: var(--led-glow, 0 0 8px #00ff66, 0 0 18px rgba(0, 255, 102, 0.7), 0 0 36px rgba(0, 255, 102, 0.4), 0 0 56px rgba(0, 255, 102, 0.15), inset 0 -1px 2px rgba(0, 0, 0, 0.15));
 }
 
 /* ── Footswitch ── */
@@ -506,4 +501,67 @@
     height: 30px;
     font-size: 10px;
   }
+}
+
+/* ── Settings ── */
+.settings-trigger {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  z-index: 20;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 16px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.settings-panel {
+  text-align: center;
+  padding: 24px;
+}
+
+.settings-title {
+  font-family: 'Russo One', 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 20px;
+}
+
+.theme-options {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.theme-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 6px rgba(0, 0, 0, 0.4);
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+
+.theme-swatch.active {
+  border-color: var(--accent, #00ff88);
+  transform: scale(1.1);
+  box-shadow: 0 0 10px var(--accent-glow, rgba(0, 255, 136, 0.3)), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }

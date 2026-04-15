@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTuner, TUNINGS } from './useTuner'
+import { useTheme } from './useTheme'
+import { THEMES } from './themes'
 import './App.css'
 
-function ArcMeter({ cents, active, startupCents }: { cents: number; active: boolean; startupCents?: number | null }) {
+function ArcMeter({ cents, active, startupCents, accent = '#00ff88', accentDark = '#00cc44' }: { cents: number; active: boolean; startupCents?: number | null; accent?: string; accentDark?: string }) {
   const isStartup = startupCents != null
   const effectiveCents = isStartup ? startupCents : cents
   const effectiveActive = isStartup || active
@@ -37,7 +39,7 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
 
     const norm = Math.abs(t)
     let color: string
-    if (norm < 0.15) color = '#00cc44'
+    if (norm < 0.15) color = accentDark
     else if (norm < 0.55) color = '#ffaa00'
     else color = '#ff2222'
 
@@ -98,7 +100,7 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
           const rectWidth = rightDot.x - leftDot.x + 6
           const rectHeight = 7
           const rectLit = inTune || (effectiveActive && Math.abs(needleDeg) < arcAngle * 0.15)
-          const rectColor = inTune ? '#00ff88' : rectLit ? '#00cc44' : '#333'
+          const rectColor = inTune ? accent : rectLit ? accentDark : '#333'
           return (
             <rect
               x={centerDot.x - rectWidth / 2}
@@ -119,12 +121,12 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
           y1={bottomY}
           x2={tipX}
           y2={tipY}
-          stroke={inTune ? '#00ff88' : '#ff6644'}
+          stroke={inTune ? accent : '#ff6644'}
           strokeWidth={1.5}
           strokeLinecap="round"
           style={{
             filter: inTune
-              ? 'drop-shadow(0 0 4px #00ff88)'
+              ? `drop-shadow(0 0 4px ${accent})`
               : 'drop-shadow(0 0 3px rgba(255,102,68,0.5))',
           }}
         />
@@ -152,6 +154,21 @@ function StringIndicator({ note, isActive }: { note: string; isActive: boolean }
 export default function App() {
   const tuner = useTuner()
   const currentTuning = TUNINGS[tuner.tuningIndex]
+  const { theme, selectTheme } = useTheme()
+
+  // Settings
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const startLongPress = useCallback(() => {
+    longPressRef.current = setTimeout(() => setSettingsOpen(true), 4000)
+  }, [])
+  const cancelLongPress = useCallback(() => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current)
+      longPressRef.current = null
+    }
+  }, [])
 
   // Boot animation state
   const [bootLedIndex, setBootLedIndex] = useState<number | null>(null)
@@ -240,11 +257,33 @@ export default function App() {
 
   return (
     <div className="pedal-board">
-      <div className="pedal-wrapper">
+      <div className="pedal-wrapper" style={{
+        '--pedal-gradient': theme.pedalGradient,
+        '--side-gradient': theme.sideGradient,
+        '--side-accent': theme.sideAccent,
+        '--brand-color': theme.brandColor,
+        '--brand-shadow': theme.brandShadow,
+        '--accent': theme.accent,
+        '--accent-dark': theme.accentDark,
+        '--accent-glow': theme.accentGlow,
+        '--led-off': theme.ledOff,
+        '--led-gradient': theme.ledGradient,
+        '--led-glow': theme.ledGlow,
+      } as React.CSSProperties}>
       <div className="pedal-side" />
       <div className="pedal">
         <Screw className="top-left" />
         <Screw className="top-right" />
+        <div
+          className="settings-trigger"
+          onMouseDown={startLongPress}
+          onMouseUp={cancelLongPress}
+          onMouseLeave={cancelLongPress}
+          onTouchStart={startLongPress}
+          onTouchEnd={cancelLongPress}
+          onTouchCancel={cancelLongPress}
+          onContextMenu={e => e.preventDefault()}
+        />
 
         <div className="pedal-top-label">
           <span className="brand">LLESNOTE-1</span>
@@ -259,7 +298,7 @@ export default function App() {
             </div>
 
             <div style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>
-              <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={bootCents} />
+              <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={bootCents} accent={theme.accent} accentDark={theme.accentDark} />
             </div>
 
             {tuner.error && (
@@ -310,6 +349,25 @@ export default function App() {
             <div className="footswitch-texture" />
           </div>
         </button>
+
+        {settingsOpen && (
+          <div className="settings-overlay" onClick={() => setSettingsOpen(false)}>
+            <div className="settings-panel" onClick={e => e.stopPropagation()}>
+              <div className="settings-title">PEDAL COLOR</div>
+              <div className="theme-options">
+                {THEMES.map(t => (
+                  <button
+                    key={t.id}
+                    className={`theme-swatch ${t.id === theme.id ? 'active' : ''}`}
+                    style={{ background: t.pedalGradient }}
+                    onClick={() => selectTheme(t.id)}
+                    aria-label={t.label}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       </div>
     </div>
