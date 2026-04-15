@@ -1,37 +1,42 @@
 import sharp from 'sharp'
-import { readFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const svgPath = resolve(__dirname, '../public/favicon.svg')
-const outDir = resolve(__dirname, '../public')
-const svg = readFileSync(svgPath)
+const SOURCE = resolve(__dirname, '../..', '..', 'Documents', 'tuner-logo-icon.PNG')
+const OUT = resolve(__dirname, '../public')
+const BG = { r: 26, g: 26, b: 26, alpha: 1 } // #1a1a1a
 
-const sizes = [
-  { name: 'pwa-192x192.png', size: 192 },
-  { name: 'pwa-512x512.png', size: 512 },
-  { name: 'apple-touch-icon-180x180.png', size: 180 },
+const icons = [
+  { name: 'favicon-32x32.png', size: 32, padding: 2 },
+  { name: 'favicon-16x16.png', size: 16, padding: 1 },
+  { name: 'apple-touch-icon-180x180.png', size: 180, padding: 24 },
+  { name: 'pwa-192x192.png', size: 192, padding: 26 },
+  { name: 'pwa-512x512.png', size: 512, padding: 64 },
+  { name: 'pwa-512x512-maskable.png', size: 512, padding: 100 },
 ]
 
-for (const { name, size } of sizes) {
-  await sharp(svg)
-    .resize(size, size)
+for (const icon of icons) {
+  const innerSize = icon.size - icon.padding * 2
+
+  const resized = await sharp(SOURCE)
+    .resize(innerSize, innerSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
-    .toFile(resolve(outDir, name))
-  console.log(`Generated ${name}`)
+    .toBuffer()
+
+  await sharp({
+    create: { width: icon.size, height: icon.size, channels: 4, background: BG },
+  })
+    .composite([{ input: resized, gravity: 'centre' }])
+    .png()
+    .toFile(resolve(OUT, icon.name))
+
+  console.log(`✓ ${icon.name} (${icon.size}x${icon.size}, padding ${icon.padding}px)`)
 }
 
-// Maskable icon: 512x512 with 20% padding on #1a1a1a background
-const iconSize = Math.round(512 * 0.8)
-const padding = Math.round((512 - iconSize) / 2)
-const iconBuffer = await sharp(svg).resize(iconSize, iconSize).png().toBuffer()
+// Copy as favicon.png for browser
+const fav32 = await sharp(resolve(OUT, 'favicon-32x32.png')).toBuffer()
+await sharp(fav32).toFile(resolve(OUT, 'favicon.png'))
+console.log('✓ favicon.png')
 
-await sharp({
-  create: { width: 512, height: 512, channels: 4, background: { r: 26, g: 26, b: 26, alpha: 1 } },
-})
-  .composite([{ input: iconBuffer, left: padding, top: padding }])
-  .png()
-  .toFile(resolve(outDir, 'pwa-512x512-maskable.png'))
-
-console.log('Generated pwa-512x512-maskable.png')
+console.log('\nDone!')
