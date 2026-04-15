@@ -102,6 +102,25 @@
   transform: translateZ(-1px);
 }
 
+/* Countersunk bevel */
+.screw::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 135deg,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.08) 90deg,
+    rgba(0, 0, 0, 0.5) 180deg,
+    rgba(0, 0, 0, 0.3) 270deg,
+    rgba(255, 255, 255, 0.12)
+  );
+  mask-image: radial-gradient(circle, transparent 62%, black 90%);
+  -webkit-mask-image: radial-gradient(circle, transparent 62%, black 90%);
+  z-index: -1;
+}
+
 
 .screw-slot {
   position: absolute;
