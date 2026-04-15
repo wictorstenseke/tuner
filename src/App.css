@@ -53,10 +53,7 @@
     inset 0 4px 6px rgba(255, 255, 255, 0.05),
     /* Side highlights for roundness */
     inset 2px 0 4px rgba(255, 255, 255, 0.06),
-    inset -2px 0 4px rgba(255, 255, 255, 0.03),
-    /* Bottom shadow edge */
-    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.1);
+    inset -2px 0 4px rgba(255, 255, 255, 0.03);
   display: flex;
   flex-direction: column;
   align-items: center;
