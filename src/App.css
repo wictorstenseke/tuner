@@ -6,7 +6,6 @@
   width: 100%;
   max-width: 400px;
   perspective: 900px;
-  margin-top: -28px;
 }
 
 /* ── Pedal Wrapper (3D container) ── */
@@ -22,10 +21,10 @@
 /* ── Side Wall (visible thickness) ── */
 .pedal-side {
   position: absolute;
-  inset: 4px 3px -56px 3px;
+  inset: 4px 2px -56px 2px;
   border-radius: 14px;
   background: var(--side-gradient, linear-gradient(180deg, #6e0c0c 0%, #3a0505 40%, #1a0202 100%));
-  transform: translateZ(-2px) rotateX(-1deg);
+  transform: translateZ(-2px);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.6),
     0 20px 50px rgba(0, 0, 0, 0.35),
