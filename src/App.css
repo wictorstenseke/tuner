@@ -110,11 +110,11 @@
   border-radius: 50%;
   background: conic-gradient(
     from 135deg,
-    rgba(0, 0, 0, 0.5),
-    rgba(0, 0, 0, 0.3) 90deg,
-    rgba(255, 255, 255, 0.12) 180deg,
-    rgba(255, 255, 255, 0.08) 270deg,
-    rgba(0, 0, 0, 0.5)
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.08) 90deg,
+    rgba(0, 0, 0, 0.5) 180deg,
+    rgba(0, 0, 0, 0.3) 270deg,
+    rgba(255, 255, 255, 0.12)
   );
   mask-image: radial-gradient(circle, transparent 55%, black 56%);
   -webkit-mask-image: radial-gradient(circle, transparent 55%, black 56%);
