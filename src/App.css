@@ -90,20 +90,35 @@
 /* ── Screws ── */
 .screw {
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: radial-gradient(circle at 45% 40%, #aaa, #777 50%, #555 80%, #444);
   box-shadow:
-    /* Recess — dark top edge, light bottom catch */
     inset 0 2px 3px rgba(0, 0, 0, 0.6),
     inset 0 1px 1px rgba(0, 0, 0, 0.4),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.15),
-    /* Outer lip — light top, dark bottom for countersink */
-    0 -1px 0 rgba(0, 0, 0, 0.4),
-    0 1px 0 rgba(255, 255, 255, 0.1);
+    inset 0 -1px 1px rgba(255, 255, 255, 0.15);
   z-index: 10;
   transform: translateZ(-1px);
+}
+
+/* Countersunk bevel */
+.screw::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 135deg,
+    rgba(0, 0, 0, 0.5),
+    rgba(0, 0, 0, 0.3) 90deg,
+    rgba(255, 255, 255, 0.12) 180deg,
+    rgba(255, 255, 255, 0.08) 270deg,
+    rgba(0, 0, 0, 0.5)
+  );
+  mask-image: radial-gradient(circle, transparent 55%, black 56%);
+  -webkit-mask-image: radial-gradient(circle, transparent 55%, black 56%);
+  z-index: -1;
 }
 
 .screw-slot {
