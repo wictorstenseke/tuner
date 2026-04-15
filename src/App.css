@@ -347,18 +347,18 @@
 
 /* ── Status LED ── */
 .status-led {
-  width: 10px;
-  height: 10px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  background: #331111;
+  background: #113311;
   border: 1px solid rgba(0, 0, 0, 0.3);
   transition: all 0.15s;
   transform: translateZ(5px);
 }
 
 .status-led.on {
-  background: #ff0000;
-  box-shadow: 0 0 8px #ff0000, 0 0 16px rgba(255, 0, 0, 0.4);
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88, 0 0 16px rgba(0, 255, 136, 0.4);
 }
 
 /* ── Footswitch ── */
