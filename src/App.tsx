@@ -3,49 +3,46 @@ import './App.css'
 
 function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
   const width = 240
-  const height = 80
+  const height = 70
   const cx = width / 2
-  // Pivot far below visible area — long virtual needle = subtle swing
-  const pivotY = 320
-  const arcRadius = 260
-  const arcCenterY = height + 10
 
-  // Arc spans ~120° centered at top
-  const arcStartAngle = -60
-  const arcEndAngle = 60
-  const totalSegments = 21
+  // Arc geometry: center far below, large radius = shallow curve
+  const arcCenterY = 300
+  const arcRadius = 270
+  const arcAngle = 25 // degrees each side from vertical
+  const totalDots = 21
 
-  // Needle angle: map cents (-50..+50) to arc angle range
+  // Needle pivot even further below for subtle swing
+  const pivotY = 400
+  const needleReach = arcRadius + 30 // needle tip extends past dots
+
   const clampedCents = Math.max(-50, Math.min(50, cents))
-  const needleAngle = active ? (clampedCents / 50) * 60 : 0
+  const needleDeg = active ? (clampedCents / 50) * arcAngle : 0
+  const inTune = active && Math.abs(cents) < 3
 
   const degToRad = (d: number) => (d * Math.PI) / 180
 
-  // Generate arc segment positions
-  const segments = Array.from({ length: totalSegments }, (_, i) => {
-    const t = i / (totalSegments - 1)
-    const angle = arcStartAngle + t * (arcEndAngle - arcStartAngle)
-    const rad = degToRad(angle - 90)
-    const x = cx + arcRadius * Math.cos(rad)
-    const y = arcCenterY + arcRadius * Math.sin(rad)
+  // Dot positions along arc
+  const dots = Array.from({ length: totalDots }, (_, i) => {
+    const t = (i / (totalDots - 1)) * 2 - 1 // -1 to +1
+    const angle = t * arcAngle
+    const rad = degToRad(angle)
+    const x = cx + arcRadius * Math.sin(rad)
+    const y = arcCenterY - arcRadius * Math.cos(rad)
 
-    // Color zones: center green, mid yellow, edges red
-    const normalizedPos = Math.abs(t - 0.5) * 2 // 0 at center, 1 at edges
+    const norm = Math.abs(t)
     let color: string
-    if (normalizedPos < 0.25) color = '#00cc44'
-    else if (normalizedPos < 0.75) color = '#ffaa00'
+    if (norm < 0.25) color = '#00cc44'
+    else if (norm < 0.75) color = '#ffaa00'
     else color = '#ff2222'
 
-    return { x, y, angle, color }
+    return { x, y, color, t }
   })
 
-  // Needle line from pivot to above arc
-  const needleRad = degToRad(needleAngle - 90)
-  const needleLength = pivotY - arcCenterY + arcRadius + 20
-  const needleTipX = cx + needleLength * Math.cos(needleRad)
-  const needleTipY = pivotY + needleLength * Math.sin(needleRad)
-
-  const inTune = active && Math.abs(cents) < 3
+  // Needle tip position
+  const needleRad = degToRad(needleDeg)
+  const tipX = cx + needleReach * Math.sin(needleRad)
+  const tipY = pivotY - needleReach * Math.cos(needleRad)
 
   return (
     <div className="arc-meter">
@@ -60,51 +57,57 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
           </filter>
         </defs>
 
-        {/* Arc segments */}
-        {segments.map((seg, i) => {
-          const segPos = Math.abs(i - (totalSegments - 1) / 2) / ((totalSegments - 1) / 2)
-          const needlePos = Math.abs(clampedCents) / 50
-          const lit = active && segPos <= needlePos + 0.05 &&
-            ((clampedCents >= 0 && i >= (totalSegments - 1) / 2) ||
-             (clampedCents < 0 && i <= (totalSegments - 1) / 2) ||
-             Math.abs(i - (totalSegments - 1) / 2) < 1.5)
+        {/* Dots along arc — always visible, lit when needle is near */}
+        {dots.map((dot, i) => {
+          const dotAngle = dot.t * arcAngle
+          const dist = Math.abs(dotAngle - needleDeg)
+          const lit = active && dist < 3.5
 
           return (
             <circle
               key={i}
-              cx={seg.x}
-              cy={seg.y}
-              r={3}
-              fill={lit ? seg.color : '#333'}
+              cx={dot.x}
+              cy={dot.y}
+              r={3.5}
+              fill={lit ? dot.color : '#333'}
               filter={lit ? 'url(#glow)' : undefined}
-              opacity={lit ? 1 : 0.5}
+              opacity={lit ? 1 : 0.4}
             />
           )
         })}
 
-        {/* Center tick mark */}
-        <line
-          x1={cx}
-          y1={arcCenterY - arcRadius - 6}
-          x2={cx}
-          y2={arcCenterY - arcRadius - 12}
-          stroke={inTune ? '#00ff88' : '#555'}
-          strokeWidth={1.5}
-        />
+        {/* Center tick */}
+        {(() => {
+          const tickRad = degToRad(0)
+          const innerR = arcRadius - 8
+          const outerR = arcRadius + 8
+          return (
+            <line
+              x1={cx + innerR * Math.sin(tickRad)}
+              y1={arcCenterY - innerR * Math.cos(tickRad)}
+              x2={cx + outerR * Math.sin(tickRad)}
+              y2={arcCenterY - outerR * Math.cos(tickRad)}
+              stroke={inTune ? '#00ff88' : '#444'}
+              strokeWidth={1.5}
+              strokeLinecap="round"
+            />
+          )
+        })()}
 
-        {/* Needle */}
+        {/* Needle — from below viewport up through dots */}
         <line
           x1={cx}
           y1={pivotY}
-          x2={needleTipX}
-          y2={needleTipY}
+          x2={tipX}
+          y2={tipY}
           stroke={inTune ? '#00ff88' : '#ff6644'}
           strokeWidth={1.5}
           strokeLinecap="round"
           className="arc-needle"
           style={{
-            filter: inTune ? 'drop-shadow(0 0 4px #00ff88)' : 'drop-shadow(0 0 3px rgba(255,102,68,0.5))',
-            transformOrigin: `${cx}px ${pivotY}px`,
+            filter: inTune
+              ? 'drop-shadow(0 0 4px #00ff88)'
+              : 'drop-shadow(0 0 3px rgba(255,102,68,0.5))',
           }}
         />
       </svg>
