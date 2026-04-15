@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 320px;
   transform-style: preserve-3d;
-  transform: rotateX(2deg);
+  transform: rotateX(5deg);
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -58,7 +58,6 @@
   flex-direction: column;
   align-items: center;
   gap: 18px;
-  overflow: hidden;
   transform-style: preserve-3d;
   z-index: 1;
 }
