@@ -22,8 +22,8 @@
 /* ── Side Wall (visible thickness) ── */
 .pedal-side {
   position: absolute;
-  inset: 6px 0px -56px 0px;
-  border-radius: 14px;
+  inset: 0px 0px -56px 0px;
+  border-radius: 16px;
   background: var(--side-gradient, linear-gradient(180deg, #6e0c0c 0%, #3a0505 40%, #1a0202 100%));
   transform: translateZ(-2px);
   box-shadow:
