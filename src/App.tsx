@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTuner, TUNINGS } from './useTuner'
 import './App.css'
 
@@ -49,7 +49,7 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
   const needleBottomY = height // clip at bottom of viewBox
 
   return (
-    <div className={`arc-meter ${!isStartup ? 'live' : ''}`}>
+    <div className="arc-meter">
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow">
@@ -137,32 +137,62 @@ export default function App() {
   const tuner = useTuner()
   const currentTuning = TUNINGS[tuner.tuningIndex]
 
-  // Startup animation state
+  // Startup animation — smooth rAF-driven needle + timed LEDs
   const [startupLedIndex, setStartupLedIndex] = useState<number | null>(0)
-  const [startupCents, setStartupCents] = useState<number | null>(-50)
+  const [startupCents, setStartupCents] = useState<number | null>(0)
+  const startupDone = useRef(false)
+
+  const easeInOut = useCallback((t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t, [])
 
   useEffect(() => {
     const stringCount = currentTuning.strings.length
-    // LED sequence: light each string one at a time
-    const ledTimers: ReturnType<typeof setTimeout>[] = []
-    for (let i = 0; i <= stringCount; i++) {
-      ledTimers.push(setTimeout(() => {
-        setStartupLedIndex(i < stringCount ? i : null)
-      }, i * 150))
-    }
+    const totalDuration = 1800
 
-    // Needle sweep: left → right → center
-    // Start at -50 (already set), go to +50, then to 0
-    const needleTimers = [
-      setTimeout(() => setStartupCents(50), 300),
-      setTimeout(() => setStartupCents(0), 900),
-      setTimeout(() => setStartupCents(null), 1500),
+    // Needle keyframes: [time, cents]
+    // Sweep: center → left → right → center
+    const keyframes: [number, number][] = [
+      [0, 0],
+      [200, -50],
+      [800, 50],
+      [1400, 0],
     ]
 
-    return () => {
-      ledTimers.forEach(clearTimeout)
-      needleTimers.forEach(clearTimeout)
+    const startTime = performance.now()
+    let rafId: number
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime
+
+      // Needle interpolation between keyframes
+      let cents = 0
+      for (let k = 0; k < keyframes.length - 1; k++) {
+        const [t0, c0] = keyframes[k]
+        const [t1, c1] = keyframes[k + 1]
+        if (elapsed >= t0 && elapsed < t1) {
+          const t = easeInOut((elapsed - t0) / (t1 - t0))
+          cents = c0 + (c1 - c0) * t
+          break
+        }
+        if (k === keyframes.length - 2) cents = keyframes[keyframes.length - 1][1]
+      }
+
+      // LED index based on elapsed time — one per string across the sweep
+      const ledDuration = 1200
+      const ledInterval = ledDuration / stringCount
+      const ledIdx = elapsed < ledDuration ? Math.floor(elapsed / ledInterval) : null
+
+      setStartupCents(elapsed < totalDuration ? cents : null)
+      setStartupLedIndex(elapsed < ledDuration ? (ledIdx != null && ledIdx < stringCount ? ledIdx : null) : null)
+
+      if (elapsed < totalDuration) {
+        rafId = requestAnimationFrame(animate)
+      } else {
+        startupDone.current = true
+      }
     }
+
+    rafId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafId)
   }, [])
 
   const inTune = tuner.note && Math.abs(tuner.cents) < 5
