@@ -159,19 +159,25 @@ export default function App() {
   const [isBooting, setIsBooting] = useState(false)
   const bootRafRef = useRef<number>(0)
 
-  const easeInOut = useCallback((t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t, [])
+  // Strong ease-in, gentle ease-out
+  const easeInSoft = useCallback((t: number) => {
+    if (t < 0.4) return 2 * t * t * t / (0.4 * 0.4) * 0.4 // cubic ease-in
+    // smooth ease-out for remaining
+    const t2 = (t - 0.4) / 0.6
+    return 0.4 + 0.6 * (1 - Math.pow(1 - t2, 2))
+  }, [])
 
   const playBootAnimation = useCallback(() => {
     return new Promise<void>((resolve) => {
       setIsBooting(true)
       setBootAllLeds(true)
-      const totalDuration = 1800
+      const totalDuration = 2400
 
       const keyframes: [number, number][] = [
         [0, 0],
-        [200, -50],
-        [800, 50],
-        [1400, 0],
+        [600, -50],
+        [1400, 50],
+        [2000, 0],
       ]
 
       const startTime = performance.now()
@@ -184,7 +190,7 @@ export default function App() {
           const [t0, c0] = keyframes[k]
           const [t1, c1] = keyframes[k + 1]
           if (elapsed >= t0 && elapsed < t1) {
-            const t = easeInOut((elapsed - t0) / (t1 - t0))
+            const t = easeInSoft((elapsed - t0) / (t1 - t0))
             cents = c0 + (c1 - c0) * t
             break
           }
@@ -204,7 +210,7 @@ export default function App() {
 
       bootRafRef.current = requestAnimationFrame(animate)
     })
-  }, [easeInOut])
+  }, [easeInSoft])
 
   const handleToggle = useCallback(async () => {
     if (tuner.isListening) {
@@ -212,7 +218,8 @@ export default function App() {
     } else if (!isBooting) {
       // Start mic first (needs user gesture, triggers permission prompt)
       await tuner.start()
-      // Then play animation — mic already listening in background
+      // Brief settle delay before animation
+      await new Promise(r => setTimeout(r, 300))
       await playBootAnimation()
     }
   }, [tuner, isBooting, playBootAnimation])
