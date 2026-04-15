@@ -209,8 +209,9 @@ export default function App() {
     if (tuner.isListening) {
       tuner.stop()
     } else if (!isBooting) {
-      await playBootAnimation()
+      // Start mic and animation in parallel — mic ready when animation ends
       tuner.start()
+      await playBootAnimation()
     }
   }, [tuner, isBooting, playBootAnimation])
 
