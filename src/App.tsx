@@ -44,9 +44,13 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
     return { x, y, color, t }
   })
 
-  // Needle drawn as vertical line from pivot, rotated via CSS transform
-  const needleTopY = pivotY - needleLength
-  const needleBottomY = height // clip at bottom of viewBox
+  // Compute needle line coordinates directly
+  const degToRadN = (d: number) => (d * Math.PI) / 180
+  const needleRad = degToRadN(needleDeg)
+  const tipX = cx + needleLength * Math.sin(needleRad)
+  const tipY = pivotY - needleLength * Math.cos(needleRad)
+  const bottomX = cx + (pivotY - height) * Math.sin(needleRad) / Math.cos(needleRad || 0.0001)
+  const bottomY = height
 
   return (
     <div className="arc-meter">
@@ -91,27 +95,21 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
           strokeLinecap="round"
         />
 
-        {/* Needle — vertical line rotated around pivot point */}
-        <g
-          className="arc-needle"
+        {/* Needle — computed coordinates, no CSS transform */}
+        <line
+          x1={bottomX}
+          y1={bottomY}
+          x2={tipX}
+          y2={tipY}
+          stroke={inTune ? '#00ff88' : '#ff6644'}
+          strokeWidth={1.5}
+          strokeLinecap="round"
           style={{
-            transform: `rotate(${needleDeg}deg)`,
-            transformOrigin: `${cx}px ${pivotY}px`,
             filter: inTune
               ? 'drop-shadow(0 0 4px #00ff88)'
               : 'drop-shadow(0 0 3px rgba(255,102,68,0.5))',
           }}
-        >
-          <line
-            x1={cx}
-            y1={needleBottomY}
-            x2={cx}
-            y2={needleTopY}
-            stroke={inTune ? '#00ff88' : '#ff6644'}
-            strokeWidth={1.5}
-            strokeLinecap="round"
-          />
-        </g>
+        />
       </svg>
     </div>
   )
@@ -137,15 +135,13 @@ export default function App() {
   const tuner = useTuner()
   const currentTuning = TUNINGS[tuner.tuningIndex]
 
-  // Startup animation — smooth rAF-driven needle + timed LEDs
-  const [startupLedIndex, setStartupLedIndex] = useState<number | null>(0)
+  // Startup animation — smooth rAF-driven needle, LEDs all on
+  const [startupAllLeds, setStartupAllLeds] = useState(true)
   const [startupCents, setStartupCents] = useState<number | null>(0)
-  const startupDone = useRef(false)
 
   const easeInOut = useCallback((t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t, [])
 
   useEffect(() => {
-    const stringCount = currentTuning.strings.length
     const totalDuration = 1800
 
     // Needle keyframes: [time, cents]
@@ -176,18 +172,12 @@ export default function App() {
         if (k === keyframes.length - 2) cents = keyframes[keyframes.length - 1][1]
       }
 
-      // LED index based on elapsed time — one per string across the sweep
-      const ledDuration = 1200
-      const ledInterval = ledDuration / stringCount
-      const ledIdx = elapsed < ledDuration ? Math.floor(elapsed / ledInterval) : null
-
-      setStartupCents(elapsed < totalDuration ? cents : null)
-      setStartupLedIndex(elapsed < ledDuration ? (ledIdx != null && ledIdx < stringCount ? ledIdx : null) : null)
-
       if (elapsed < totalDuration) {
+        setStartupCents(cents)
         rafId = requestAnimationFrame(animate)
       } else {
-        startupDone.current = true
+        setStartupCents(null)
+        setStartupAllLeds(false)
       }
     }
 
@@ -230,8 +220,8 @@ export default function App() {
               key={`${s.note}${s.octave}-${i}`}
               note={s.note}
               isActive={
-                startupLedIndex === i ||
-                (startupLedIndex == null &&
+                startupAllLeds ||
+                (!startupAllLeds &&
                 !!tuner.closestString &&
                 tuner.closestString.note === s.note &&
                 tuner.closestString.octave === s.octave)
