@@ -367,12 +367,13 @@
 }
 
 .status-led.on {
-  background: radial-gradient(circle at 40% 35%, #aaffcc, #00ff88 60%);
+  background: radial-gradient(circle at 40% 35%, #ffffff, #44ffaa 40%, #00ff66 70%);
   box-shadow:
-    0 0 6px #00ff88,
-    0 0 14px rgba(0, 255, 136, 0.6),
-    0 0 28px rgba(0, 255, 136, 0.3),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+    0 0 8px #00ff66,
+    0 0 18px rgba(0, 255, 102, 0.7),
+    0 0 36px rgba(0, 255, 102, 0.4),
+    0 0 56px rgba(0, 255, 102, 0.15),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15);
 }
 
 /* ── Footswitch ── */

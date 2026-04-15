@@ -68,13 +68,14 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
         {/* Side dots — skip center 3 (indices 9,10,11) */}
         {dots.map((dot, i) => {
           if (i >= 9 && i <= 11) return null
-          // Find closest single dot to needle
+          // Light up closest side dot, but not when needle is in center zone
           const closestIdx = dots.reduce((best, d, j) => {
             if (j >= 9 && j <= 11) return best
             const dDist = Math.abs(d.t * arcAngle - needleDeg)
             return dDist < Math.abs(dots[best].t * arcAngle - needleDeg) ? j : best
           }, 0)
-          const lit = effectiveActive && i === closestIdx
+          const inCenterZone = Math.abs(needleDeg) < arcAngle * 0.15
+          const lit = effectiveActive && !inCenterZone && i === closestIdx
 
           return (
             <circle
@@ -237,17 +238,15 @@ export default function App() {
 
         <div className="display">
           <div className="display-inner">
-            {(tuner.isListening || isBooting) && (
-              <>
-                <div className="version-label">v{APP_VERSION}</div>
-                <div className="tuning-label">{currentTuning.label}</div>
-              </>
-            )}
-            <div className={`note-display ${inTune ? 'in-tune' : ''}`}>
-              {tuner.isListening || isBooting ? (tuner.note || '--') : ''}
+            <div className="version-label" style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>v{APP_VERSION}</div>
+            <div className="tuning-label" style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>{currentTuning.label}</div>
+            <div className={`note-display ${inTune ? 'in-tune' : ''}`} style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>
+              {tuner.note || '--'}
             </div>
 
-            <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={bootCents} />
+            <div style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>
+              <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={bootCents} />
+            </div>
 
             {tuner.error && (
               <div className="error-display">{tuner.error}</div>
