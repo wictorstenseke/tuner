@@ -26,10 +26,15 @@
   background: var(--side-gradient, linear-gradient(180deg, #6e0c0c 0%, #3a0505 40%, #1a0202 100%));
   transform: translateZ(-2px);
   box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.6),
-    0 20px 50px rgba(0, 0, 0, 0.35),
-    0 30px 70px rgba(0, 0, 0, 0.15),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    /* Ground shadow — layered for realism */
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    0 16px 32px rgba(0, 0, 0, 0.4),
+    0 30px 60px rgba(0, 0, 0, 0.25),
+    0 50px 80px rgba(0, 0, 0, 0.1),
+    /* Bottom bevel — light catching the underside edge */
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+    /* Side edges */
     inset 1px 0 0 var(--side-accent, rgba(255, 80, 80, 0.08)),
     inset -1px 0 0 rgba(0, 0, 0, 0.3);
 }
