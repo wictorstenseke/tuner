@@ -1,7 +1,11 @@
+import { useState, useEffect } from 'react'
 import { useTuner, TUNINGS } from './useTuner'
 import './App.css'
 
-function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
+function ArcMeter({ cents, active, startupCents }: { cents: number; active: boolean; startupCents?: number | null }) {
+  const isStartup = startupCents != null
+  const effectiveCents = isStartup ? startupCents : cents
+  const effectiveActive = isStartup || active
   const width = 280
   const height = 60
   const cx = width / 2
@@ -17,9 +21,9 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
   const pivotY = 600
   const needleLength = 575       // long enough that tip reaches dot row
 
-  const clampedCents = Math.max(-50, Math.min(50, cents))
-  const needleDeg = active ? (clampedCents / 50) * arcAngle : 0
-  const inTune = active && Math.abs(cents) < 3
+  const clampedCents = Math.max(-50, Math.min(50, effectiveCents))
+  const needleDeg = effectiveActive ? (clampedCents / 50) * arcAngle : 0
+  const inTune = !isStartup && active && Math.abs(cents) < 3
 
   const degToRad = (d: number) => (d * Math.PI) / 180
 
@@ -49,7 +53,7 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
   const bottomX = cx + (pivotY - height) * Math.tan(needleRad)
 
   return (
-    <div className="arc-meter">
+    <div className={`arc-meter ${!isStartup ? 'live' : ''}`}>
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow">
@@ -65,7 +69,7 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
         {dots.map((dot, i) => {
           const dotAngle = dot.t * arcAngle
           const dist = Math.abs(dotAngle - needleDeg)
-          const lit = active && dist < 2
+          const lit = effectiveActive && dist < 2
 
           return (
             <circle
@@ -132,6 +136,34 @@ export default function App() {
   const tuner = useTuner()
   const currentTuning = TUNINGS[tuner.tuningIndex]
 
+  // Startup animation state
+  const [startupLedIndex, setStartupLedIndex] = useState<number | null>(0)
+  const [startupCents, setStartupCents] = useState<number | null>(-50)
+
+  useEffect(() => {
+    const stringCount = currentTuning.strings.length
+    // LED sequence: light each string one at a time
+    const ledTimers: ReturnType<typeof setTimeout>[] = []
+    for (let i = 0; i <= stringCount; i++) {
+      ledTimers.push(setTimeout(() => {
+        setStartupLedIndex(i < stringCount ? i : null)
+      }, i * 150))
+    }
+
+    // Needle sweep: left → right → center
+    // Start at -50 (already set), go to +50, then to 0
+    const needleTimers = [
+      setTimeout(() => setStartupCents(50), 300),
+      setTimeout(() => setStartupCents(0), 900),
+      setTimeout(() => setStartupCents(null), 1500),
+    ]
+
+    return () => {
+      ledTimers.forEach(clearTimeout)
+      needleTimers.forEach(clearTimeout)
+    }
+  }, [])
+
   const inTune = tuner.note && Math.abs(tuner.cents) < 5
 
   return (
@@ -153,7 +185,7 @@ export default function App() {
               {tuner.note || '--'}
             </div>
 
-            <ArcMeter cents={tuner.cents} active={!!tuner.note} />
+            <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={startupCents} />
 
             {tuner.error && (
               <div className="error-display">{tuner.error}</div>
@@ -167,9 +199,11 @@ export default function App() {
               key={`${s.note}${s.octave}-${i}`}
               note={s.note}
               isActive={
+                startupLedIndex === i ||
+                (startupLedIndex == null &&
                 !!tuner.closestString &&
                 tuner.closestString.note === s.note &&
-                tuner.closestString.octave === s.octave
+                tuner.closestString.octave === s.octave)
               }
             />
           ))}

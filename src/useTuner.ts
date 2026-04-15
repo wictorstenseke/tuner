@@ -142,10 +142,6 @@ export function useTuner() {
     detectRef.current = null
     wakeLock.release()
 
-    // Exit fullscreen
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {})
-    }
     setState((s) => ({ ...s, isListening: false, note: null, frequency: null, cents: 0, clarity: 0, closestString: null }))
   }, [wakeLock])
 
@@ -184,11 +180,6 @@ export function useTuner() {
       isListeningRef.current = true
       setState((s) => ({ ...s, isListening: true, error: null }))
       await wakeLock.request()
-
-      // Enter fullscreen for distraction-free tuning
-      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {})
-      }
 
       let smoothedCents = 0
       let lastNote = ''
