@@ -44,13 +44,9 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
     return { x, y, color, t }
   })
 
-  // Needle tip position
-  const needleRad = degToRad(needleDeg)
-  const tipX = cx + needleLength * Math.sin(needleRad)
-  const tipY = pivotY - needleLength * Math.cos(needleRad)
-
-  // Needle enters viewBox from below — compute where it crosses y=height
-  const bottomX = cx + (pivotY - height) * Math.tan(needleRad)
+  // Needle drawn as vertical line from pivot, rotated via CSS transform
+  const needleTopY = pivotY - needleLength
+  const needleBottomY = height // clip at bottom of viewBox
 
   return (
     <div className={`arc-meter ${!isStartup ? 'live' : ''}`}>
@@ -95,22 +91,27 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
           strokeLinecap="round"
         />
 
-        {/* Needle — from bottom of viewBox up to tip near dots */}
-        <line
-          x1={bottomX}
-          y1={height}
-          x2={tipX}
-          y2={tipY}
-          stroke={inTune ? '#00ff88' : '#ff6644'}
-          strokeWidth={1.5}
-          strokeLinecap="round"
+        {/* Needle — vertical line rotated around pivot point */}
+        <g
           className="arc-needle"
           style={{
+            transform: `rotate(${needleDeg}deg)`,
+            transformOrigin: `${cx}px ${pivotY}px`,
             filter: inTune
               ? 'drop-shadow(0 0 4px #00ff88)'
               : 'drop-shadow(0 0 3px rgba(255,102,68,0.5))',
           }}
-        />
+        >
+          <line
+            x1={cx}
+            y1={needleBottomY}
+            x2={cx}
+            y2={needleTopY}
+            stroke={inTune ? '#00ff88' : '#ff6644'}
+            strokeWidth={1.5}
+            strokeLinecap="round"
+          />
+        </g>
       </svg>
     </div>
   )

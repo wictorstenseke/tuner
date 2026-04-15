@@ -247,11 +247,11 @@
 }
 
 .arc-needle {
-  transition: x1 0.5s ease-in-out, y1 0.5s ease-in-out, x2 0.5s ease-in-out, y2 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out;
 }
 
 .arc-meter.live .arc-needle {
-  transition: x1 0.12s ease-out, y1 0.12s ease-out, x2 0.12s ease-out, y2 0.12s ease-out;
+  transition: transform 0.12s ease-out;
 }
 
 /* ── Error Display ── */
