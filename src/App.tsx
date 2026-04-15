@@ -209,8 +209,9 @@ export default function App() {
     if (tuner.isListening) {
       tuner.stop()
     } else if (!isBooting) {
-      // Start mic and animation in parallel — mic ready when animation ends
-      tuner.start()
+      // Start mic first (needs user gesture, triggers permission prompt)
+      await tuner.start()
+      // Then play animation — mic already listening in background
       await playBootAnimation()
     }
   }, [tuner, isBooting, playBootAnimation])
