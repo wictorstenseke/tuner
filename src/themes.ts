@@ -87,12 +87,12 @@ export const THEMES: PedalTheme[] = [
     sideAccent: 'rgba(255, 140, 60, 0.08)',
     brandColor: 'rgba(255, 255, 255, 0.85)',
     brandShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
-    accent: '#8855ff',
-    accentDark: '#6644cc',
-    accentGlow: 'rgba(136, 85, 255, 0.5)',
-    ledOff: '#1a1133',
-    ledGradient: 'radial-gradient(circle at 40% 35%, #ffffff, #aa88ff 40%, #8855ff 70%)',
-    ledGlow: '0 0 8px #8855ff, 0 0 18px rgba(136, 85, 255, 0.7), 0 0 36px rgba(136, 85, 255, 0.4), 0 0 56px rgba(136, 85, 255, 0.15), inset 0 -1px 2px rgba(0, 0, 0, 0.15)',
+    accent: '#ffcc00',
+    accentDark: '#cc9900',
+    accentGlow: 'rgba(255, 204, 0, 0.5)',
+    ledOff: '#332200',
+    ledGradient: 'radial-gradient(circle at 40% 35%, #ffffff, #ffdd55 40%, #ffcc00 70%)',
+    ledGlow: '0 0 8px #ffcc00, 0 0 18px rgba(255, 204, 0, 0.7), 0 0 36px rgba(255, 204, 0, 0.4), 0 0 56px rgba(255, 204, 0, 0.15), inset 0 -1px 2px rgba(0, 0, 0, 0.15)',
   },
 ]
 
