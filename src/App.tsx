@@ -274,7 +274,7 @@ export default function App() {
               key={`${s.note}${s.octave}-${i}`}
               note={s.note}
               isActive={
-                bootLedIndex === i ||
+                (bootLedIndex != null && i <= bootLedIndex) ||
                 (bootLedIndex == null &&
                 !!tuner.closestString &&
                 tuner.closestString.note === s.note &&
