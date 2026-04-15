@@ -515,22 +515,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.settings-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  border-radius: 16px;
-  z-index: 100;
+.settings-panel {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-
-.settings-panel {
-  text-align: center;
-  padding: 24px;
+  height: 100%;
+  padding: 16px;
 }
 
 .settings-title {

@@ -291,18 +291,37 @@ export default function App() {
 
         <div className="display">
           <div className="display-inner">
-            <div className="version-label" style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>v{APP_VERSION}</div>
-            <div className="tuning-label" style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>{currentTuning.label}</div>
-            <div className={`note-display ${inTune ? 'in-tune' : ''}`} style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>
-              {tuner.note || '--'}
-            </div>
+            {settingsOpen ? (
+              <div className="settings-panel">
+                <div className="settings-title">PEDAL COLOR</div>
+                <div className="theme-options">
+                  {THEMES.map(t => (
+                    <button
+                      key={t.id}
+                      className={`theme-swatch ${t.id === theme.id ? 'active' : ''}`}
+                      style={{ background: t.pedalGradient }}
+                      onClick={() => { selectTheme(t.id); setSettingsOpen(false) }}
+                      aria-label={t.label}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="version-label" style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>v{APP_VERSION}</div>
+                <div className="tuning-label" style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>{currentTuning.label}</div>
+                <div className={`note-display ${inTune ? 'in-tune' : ''}`} style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>
+                  {tuner.note || '--'}
+                </div>
 
-            <div style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>
-              <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={bootCents} accent={theme.accent} accentDark={theme.accentDark} />
-            </div>
+                <div style={{ opacity: tuner.isListening || isBooting ? 1 : 0 }}>
+                  <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={bootCents} accent={theme.accent} accentDark={theme.accentDark} />
+                </div>
 
-            {tuner.error && (
-              <div className="error-display">{tuner.error}</div>
+                {tuner.error && (
+                  <div className="error-display">{tuner.error}</div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -350,24 +369,6 @@ export default function App() {
           </div>
         </button>
 
-        {settingsOpen && (
-          <div className="settings-overlay" onClick={() => setSettingsOpen(false)}>
-            <div className="settings-panel" onClick={e => e.stopPropagation()}>
-              <div className="settings-title">PEDAL COLOR</div>
-              <div className="theme-options">
-                {THEMES.map(t => (
-                  <button
-                    key={t.id}
-                    className={`theme-swatch ${t.id === theme.id ? 'active' : ''}`}
-                    style={{ background: t.pedalGradient }}
-                    onClick={() => selectTheme(t.id)}
-                    aria-label={t.label}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       </div>
     </div>
