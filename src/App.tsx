@@ -218,6 +218,7 @@ export default function App() {
 
         <div className="display">
           <div className="display-inner">
+            <div className="version-label">v{APP_VERSION}</div>
             <div className="tuning-label">{currentTuning.label}</div>
             <div className={`note-display ${inTune ? 'in-tune' : ''}`}>
               {tuner.note || '--'}

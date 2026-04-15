@@ -334,6 +334,16 @@
   flex-shrink: 0;
 }
 
+.version-label {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  color: rgba(255, 170, 0, 0.5);
+  letter-spacing: 2px;
+}
+
 .tuning-label {
   position: absolute;
   top: 8px;
