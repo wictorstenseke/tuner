@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTuner, TUNINGS } from './useTuner'
 import './App.css'
 
@@ -152,54 +152,71 @@ export default function App() {
   const tuner = useTuner()
   const currentTuning = TUNINGS[tuner.tuningIndex]
 
-  // Startup animation — smooth rAF-driven needle, LEDs all on
-  const [startupAllLeds, setStartupAllLeds] = useState(true)
-  const [startupCents, setStartupCents] = useState<number | null>(0)
+  // Boot animation state
+  const [bootAllLeds, setBootAllLeds] = useState(false)
+  const [bootCents, setBootCents] = useState<number | null>(null)
+  const [isBooting, setIsBooting] = useState(false)
+  const bootRafRef = useRef<number>(0)
 
   const easeInOut = useCallback((t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t, [])
 
-  useEffect(() => {
-    const totalDuration = 1800
+  const playBootAnimation = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      setIsBooting(true)
+      setBootAllLeds(true)
+      const totalDuration = 1800
 
-    // Needle keyframes: [time, cents]
-    // Sweep: center → left → right → center
-    const keyframes: [number, number][] = [
-      [0, 0],
-      [200, -50],
-      [800, 50],
-      [1400, 0],
-    ]
+      const keyframes: [number, number][] = [
+        [0, 0],
+        [200, -50],
+        [800, 50],
+        [1400, 0],
+      ]
 
-    const startTime = performance.now()
-    let rafId: number
+      const startTime = performance.now()
 
-    const animate = (now: number) => {
-      const elapsed = now - startTime
+      const animate = (now: number) => {
+        const elapsed = now - startTime
 
-      // Needle interpolation between keyframes
-      let cents = 0
-      for (let k = 0; k < keyframes.length - 1; k++) {
-        const [t0, c0] = keyframes[k]
-        const [t1, c1] = keyframes[k + 1]
-        if (elapsed >= t0 && elapsed < t1) {
-          const t = easeInOut((elapsed - t0) / (t1 - t0))
-          cents = c0 + (c1 - c0) * t
-          break
+        let cents = 0
+        for (let k = 0; k < keyframes.length - 1; k++) {
+          const [t0, c0] = keyframes[k]
+          const [t1, c1] = keyframes[k + 1]
+          if (elapsed >= t0 && elapsed < t1) {
+            const t = easeInOut((elapsed - t0) / (t1 - t0))
+            cents = c0 + (c1 - c0) * t
+            break
+          }
+          if (k === keyframes.length - 2) cents = keyframes[keyframes.length - 1][1]
         }
-        if (k === keyframes.length - 2) cents = keyframes[keyframes.length - 1][1]
+
+        if (elapsed < totalDuration) {
+          setBootCents(cents)
+          bootRafRef.current = requestAnimationFrame(animate)
+        } else {
+          setBootCents(null)
+          setBootAllLeds(false)
+          setIsBooting(false)
+          resolve()
+        }
       }
 
-      if (elapsed < totalDuration) {
-        setStartupCents(cents)
-        rafId = requestAnimationFrame(animate)
-      } else {
-        setStartupCents(null)
-        setStartupAllLeds(false)
-      }
+      bootRafRef.current = requestAnimationFrame(animate)
+    })
+  }, [easeInOut])
+
+  const handleToggle = useCallback(async () => {
+    if (tuner.isListening) {
+      tuner.stop()
+    } else if (!isBooting) {
+      await playBootAnimation()
+      tuner.start()
     }
+  }, [tuner, isBooting, playBootAnimation])
 
-    rafId = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(rafId)
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => cancelAnimationFrame(bootRafRef.current)
   }, [])
 
   const inTune = tuner.note && Math.abs(tuner.cents) < 5
@@ -218,13 +235,17 @@ export default function App() {
 
         <div className="display">
           <div className="display-inner">
-            <div className="version-label">v{APP_VERSION}</div>
-            <div className="tuning-label">{currentTuning.label}</div>
+            {(tuner.isListening || isBooting) && (
+              <>
+                <div className="version-label">v{APP_VERSION}</div>
+                <div className="tuning-label">{currentTuning.label}</div>
+              </>
+            )}
             <div className={`note-display ${inTune ? 'in-tune' : ''}`}>
-              {tuner.note || '--'}
+              {tuner.isListening || isBooting ? (tuner.note || '--') : ''}
             </div>
 
-            <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={startupCents} />
+            <ArcMeter cents={tuner.cents} active={!!tuner.note} startupCents={bootCents} />
 
             {tuner.error && (
               <div className="error-display">{tuner.error}</div>
@@ -238,8 +259,8 @@ export default function App() {
               key={`${s.note}${s.octave}-${i}`}
               note={s.note}
               isActive={
-                startupAllLeds ||
-                (!startupAllLeds &&
+                bootAllLeds ||
+                (!bootAllLeds &&
                 !!tuner.closestString &&
                 tuner.closestString.note === s.note &&
                 tuner.closestString.octave === s.octave)
@@ -268,7 +289,7 @@ export default function App() {
 
         <button
           className={`footswitch ${tuner.isListening ? 'active' : ''}`}
-          onClick={tuner.toggle}
+          onClick={handleToggle}
         >
           <div className="footswitch-cap">
             <div className="footswitch-texture" />
