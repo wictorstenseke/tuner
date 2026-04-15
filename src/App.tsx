@@ -1,60 +1,113 @@
 import { useTuner, TUNINGS } from './useTuner'
 import './App.css'
 
-function CentsStrip({ cents, active }: { cents: number; active: boolean }) {
-  const totalDots = 23
-  const center = Math.floor(totalDots / 2)
+function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
+  const width = 240
+  const height = 80
+  const cx = width / 2
+  // Pivot far below visible area — long virtual needle = subtle swing
+  const pivotY = 320
+  const arcRadius = 260
+  const arcCenterY = height + 10
 
-  const inTuneZone = active && Math.abs(cents) < 3
-  const label = !active ? '\u00A0' : inTuneZone ? 'IN TUNE' : cents < 0 ? 'FLAT' : 'SHARP'
+  // Arc spans ~120° centered at top
+  const arcStartAngle = -60
+  const arcEndAngle = 60
+  const totalSegments = 21
+
+  // Needle angle: map cents (-50..+50) to arc angle range
+  const clampedCents = Math.max(-50, Math.min(50, cents))
+  const needleAngle = active ? (clampedCents / 50) * 60 : 0
+
+  const degToRad = (d: number) => (d * Math.PI) / 180
+
+  // Generate arc segment positions
+  const segments = Array.from({ length: totalSegments }, (_, i) => {
+    const t = i / (totalSegments - 1)
+    const angle = arcStartAngle + t * (arcEndAngle - arcStartAngle)
+    const rad = degToRad(angle - 90)
+    const x = cx + arcRadius * Math.cos(rad)
+    const y = arcCenterY + arcRadius * Math.sin(rad)
+
+    // Color zones: center green, mid yellow, edges red
+    const normalizedPos = Math.abs(t - 0.5) * 2 // 0 at center, 1 at edges
+    let color: string
+    if (normalizedPos < 0.25) color = '#00cc44'
+    else if (normalizedPos < 0.75) color = '#ffaa00'
+    else color = '#ff2222'
+
+    return { x, y, angle, color }
+  })
+
+  // Needle line from pivot to above arc
+  const needleRad = degToRad(needleAngle - 90)
+  const needleLength = pivotY - arcCenterY + arcRadius + 20
+  const needleTipX = cx + needleLength * Math.cos(needleRad)
+  const needleTipY = pivotY + needleLength * Math.sin(needleRad)
+
+  const inTune = active && Math.abs(cents) < 3
 
   return (
-    <div className="cents-strip">
-      <div className="cents-dots">
-        {Array.from({ length: totalDots }, (_, i) => {
-          if (i === center) {
-            const inZone = active && Math.abs(cents) < 3
-            return (
-              <div
-                key="center-block"
-                className={`center-block ${inZone ? 'lit' : ''}`}
-                style={{
-                  background: inZone ? '#00ff88' : '#333',
-                  boxShadow: inZone ? '0 0 8px #00ff88' : 'none',
-                }}
-              />
-            )
-          }
-          const position = ((i - center) / center) * 50
-          const isCenterBlock = Math.abs(i - center) <= 1
-          if (isCenterBlock) return null
+    <div className="arc-meter">
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-          const dist = active ? Math.abs(position - cents) : Infinity
-          const lit = dist < 6
-
-          let color = '#333'
-          if (lit) {
-            if (Math.abs(position) < 12) color = '#00cc44'
-            else if (Math.abs(position) >= 40) color = '#ff2222'
-            else color = '#ffaa00'
-          }
-
-          const beforeCenter = i === center - 2
-          const afterCenter = i === center + 2
+        {/* Arc segments */}
+        {segments.map((seg, i) => {
+          const segPos = Math.abs(i - (totalSegments - 1) / 2) / ((totalSegments - 1) / 2)
+          const needlePos = Math.abs(clampedCents) / 50
+          const lit = active && segPos <= needlePos + 0.05 &&
+            ((clampedCents >= 0 && i >= (totalSegments - 1) / 2) ||
+             (clampedCents < 0 && i <= (totalSegments - 1) / 2) ||
+             Math.abs(i - (totalSegments - 1) / 2) < 1.5)
 
           return (
-            <div
+            <circle
               key={i}
-              className={`cents-dot ${lit ? 'lit' : ''} ${beforeCenter ? 'before-center' : ''} ${afterCenter ? 'after-center' : ''}`}
-              style={{
-                background: color,
-                boxShadow: lit ? `0 0 6px ${color}` : 'none',
-              }}
+              cx={seg.x}
+              cy={seg.y}
+              r={3}
+              fill={lit ? seg.color : '#333'}
+              filter={lit ? 'url(#glow)' : undefined}
+              opacity={lit ? 1 : 0.5}
             />
           )
         })}
-      </div>
-      <div className={`cents-label-text ${inTuneZone ? 'in-tune' : ''}`}>{label}</div>
+
+        {/* Center tick mark */}
+        <line
+          x1={cx}
+          y1={arcCenterY - arcRadius - 6}
+          x2={cx}
+          y2={arcCenterY - arcRadius - 12}
+          stroke={inTune ? '#00ff88' : '#555'}
+          strokeWidth={1.5}
+        />
+
+        {/* Needle */}
+        <line
+          x1={cx}
+          y1={pivotY}
+          x2={needleTipX}
+          y2={needleTipY}
+          stroke={inTune ? '#00ff88' : '#ff6644'}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          className="arc-needle"
+          style={{
+            filter: inTune ? 'drop-shadow(0 0 4px #00ff88)' : 'drop-shadow(0 0 3px rgba(255,102,68,0.5))',
+            transformOrigin: `${cx}px ${pivotY}px`,
+          }}
+        />
+      </svg>
     </div>
   )
 }
@@ -100,7 +153,7 @@ export default function App() {
               {tuner.note || '--'}
             </div>
 
-            <CentsStrip cents={tuner.cents} active={!!tuner.note} />
+            <ArcMeter cents={tuner.cents} active={!!tuner.note} />
 
             {tuner.error && (
               <div className="error-display">{tuner.error}</div>
