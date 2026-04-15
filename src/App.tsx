@@ -68,8 +68,6 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
         {/* Side dots — skip center 3 (indices 9,10,11) */}
         {dots.map((dot, i) => {
           if (i >= 9 && i <= 11) return null
-          const dotAngle = dot.t * arcAngle
-          const dist = Math.abs(dotAngle - needleDeg)
           // Find closest single dot to needle
           const closestIdx = dots.reduce((best, d, j) => {
             if (j >= 9 && j <= 11) return best
