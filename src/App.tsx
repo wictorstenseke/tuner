@@ -154,7 +154,7 @@ export default function App() {
   const currentTuning = TUNINGS[tuner.tuningIndex]
 
   // Boot animation state
-  const [bootAllLeds, setBootAllLeds] = useState(false)
+  const [bootLedIndex, setBootLedIndex] = useState<number | null>(null)
   const [bootCents, setBootCents] = useState<number | null>(null)
   const [isBooting, setIsBooting] = useState(false)
   const bootRafRef = useRef<number>(0)
@@ -167,24 +167,27 @@ export default function App() {
     return 0.4 + 0.6 * (1 - Math.pow(1 - t2, 2))
   }, [])
 
-  const playBootAnimation = useCallback(() => {
+  const playBootAnimation = useCallback((stringCount: number) => {
     return new Promise<void>((resolve) => {
       setIsBooting(true)
-      setBootAllLeds(true)
-      const totalDuration = 2400
+      const totalDuration = 3200
 
       const keyframes: [number, number][] = [
         [0, 0],
-        [600, -50],
-        [1400, 50],
-        [2000, 0],
+        [800, -50],
+        [1800, 50],
+        [2800, 0],
       ]
+
+      // LEDs light up one by one across full animation
+      const ledInterval = totalDuration / stringCount
 
       const startTime = performance.now()
 
       const animate = (now: number) => {
         const elapsed = now - startTime
 
+        // Needle interpolation
         let cents = 0
         for (let k = 0; k < keyframes.length - 1; k++) {
           const [t0, c0] = keyframes[k]
@@ -197,12 +200,16 @@ export default function App() {
           if (k === keyframes.length - 2) cents = keyframes[keyframes.length - 1][1]
         }
 
+        // LED sequence
+        const ledIdx = Math.min(Math.floor(elapsed / ledInterval), stringCount - 1)
+        setBootLedIndex(ledIdx)
+
         if (elapsed < totalDuration) {
           setBootCents(cents)
           bootRafRef.current = requestAnimationFrame(animate)
         } else {
           setBootCents(null)
-          setBootAllLeds(false)
+          setBootLedIndex(null)
           setIsBooting(false)
           resolve()
         }
@@ -220,7 +227,7 @@ export default function App() {
       await tuner.start()
       // Brief settle delay before animation
       await new Promise(r => setTimeout(r, 300))
-      await playBootAnimation()
+      await playBootAnimation(currentTuning.strings.length)
     }
   }, [tuner, isBooting, playBootAnimation])
 
@@ -267,8 +274,8 @@ export default function App() {
               key={`${s.note}${s.octave}-${i}`}
               note={s.note}
               isActive={
-                bootAllLeds ||
-                (!bootAllLeds &&
+                bootLedIndex === i ||
+                (bootLedIndex == null &&
                 !!tuner.closestString &&
                 tuner.closestString.note === s.note &&
                 tuner.closestString.octave === s.octave)
