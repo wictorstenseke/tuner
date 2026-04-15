@@ -65,11 +65,18 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
           </filter>
         </defs>
 
-        {/* Dots along arc — always visible, lit when needle is near */}
+        {/* Side dots — skip center 3 (indices 9,10,11) */}
         {dots.map((dot, i) => {
+          if (i >= 9 && i <= 11) return null
           const dotAngle = dot.t * arcAngle
           const dist = Math.abs(dotAngle - needleDeg)
-          const lit = effectiveActive && dist < 2
+          // Find closest single dot to needle
+          const closestIdx = dots.reduce((best, d, j) => {
+            if (j >= 9 && j <= 11) return best
+            const dDist = Math.abs(d.t * arcAngle - needleDeg)
+            return dDist < Math.abs(dots[best].t * arcAngle - needleDeg) ? j : best
+          }, 0)
+          const lit = effectiveActive && i === closestIdx
 
           return (
             <circle
@@ -84,16 +91,28 @@ function ArcMeter({ cents, active, startupCents }: { cents: number; active: bool
           )
         })}
 
-        {/* Center tick mark */}
-        <line
-          x1={cx}
-          y1={dots[Math.floor(totalDots / 2)].y - 7}
-          x2={cx}
-          y2={dots[Math.floor(totalDots / 2)].y + 7}
-          stroke={inTune ? '#00ff88' : '#444'}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-        />
+        {/* Center rectangle — green when in tune */}
+        {(() => {
+          const centerDot = dots[10]
+          const leftDot = dots[9]
+          const rightDot = dots[11]
+          const rectWidth = rightDot.x - leftDot.x + 6
+          const rectHeight = 7
+          const rectLit = inTune || (effectiveActive && Math.abs(needleDeg) < arcAngle * 0.15)
+          const rectColor = inTune ? '#00ff88' : rectLit ? '#00cc44' : '#333'
+          return (
+            <rect
+              x={centerDot.x - rectWidth / 2}
+              y={centerDot.y - rectHeight / 2}
+              width={rectWidth}
+              height={rectHeight}
+              rx={3}
+              fill={rectColor}
+              filter={rectLit ? 'url(#glow)' : undefined}
+              opacity={rectLit ? 1 : 0.4}
+            />
+          )
+        })()}
 
         {/* Needle — computed coordinates, no CSS transform */}
         <line
