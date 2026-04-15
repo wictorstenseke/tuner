@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { THEMES, PedalTheme, loadTheme, saveTheme } from './themes'
+import { THEMES, type PedalTheme, loadTheme, saveTheme } from './themes'
 
 export function useTheme() {
   const [theme, setTheme] = useState<PedalTheme>(loadTheme)
