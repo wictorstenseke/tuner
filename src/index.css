@@ -12,9 +12,9 @@ html, body {
 }
 
 body {
-  background: #1a1a1a;
+  background: #1a0a0a;
   background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(40, 40, 50, 0.8) 0%, transparent 70%),
+    radial-gradient(ellipse at 50% 50%, rgba(60, 15, 15, 0.6) 0%, transparent 70%),
     repeating-linear-gradient(
       0deg,
       transparent,
