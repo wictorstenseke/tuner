@@ -246,7 +246,7 @@
 }
 
 .arc-needle {
-  transition: x2 0.12s ease-out, y2 0.12s ease-out;
+  transition: x1 0.12s ease-out, y1 0.12s ease-out, x2 0.12s ease-out, y2 0.12s ease-out;
 }
 
 /* ── Error Display ── */

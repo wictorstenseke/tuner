@@ -2,19 +2,20 @@ import { useTuner, TUNINGS } from './useTuner'
 import './App.css'
 
 function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
-  const width = 240
-  const height = 70
+  const width = 280
+  const height = 60
   const cx = width / 2
 
-  // Arc geometry: center far below, large radius = shallow curve
-  const arcCenterY = 300
-  const arcRadius = 270
-  const arcAngle = 25 // degrees each side from vertical
+  // Arc geometry: center far below viewBox, large radius → shallow arc
+  // Dots sit near the top of the viewBox
+  const arcCenterY = 500        // far below
+  const arcRadius = 478          // large radius so arc is shallow
+  const arcAngle = 14            // degrees each side — keeps dots within width
   const totalDots = 21
 
-  // Needle pivot even further below for subtle swing
-  const pivotY = 400
-  const needleReach = arcRadius + 30 // needle tip extends past dots
+  // Needle pivot below viewBox for subtle angular swing
+  const pivotY = 600
+  const needleLength = 575       // long enough that tip reaches dot row
 
   const clampedCents = Math.max(-50, Math.min(50, cents))
   const needleDeg = active ? (clampedCents / 50) * arcAngle : 0
@@ -32,8 +33,8 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
 
     const norm = Math.abs(t)
     let color: string
-    if (norm < 0.25) color = '#00cc44'
-    else if (norm < 0.75) color = '#ffaa00'
+    if (norm < 0.15) color = '#00cc44'
+    else if (norm < 0.55) color = '#ffaa00'
     else color = '#ff2222'
 
     return { x, y, color, t }
@@ -41,8 +42,11 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
 
   // Needle tip position
   const needleRad = degToRad(needleDeg)
-  const tipX = cx + needleReach * Math.sin(needleRad)
-  const tipY = pivotY - needleReach * Math.cos(needleRad)
+  const tipX = cx + needleLength * Math.sin(needleRad)
+  const tipY = pivotY - needleLength * Math.cos(needleRad)
+
+  // Needle enters viewBox from below — compute where it crosses y=height
+  const bottomX = cx + (pivotY - height) * Math.tan(needleRad)
 
   return (
     <div className="arc-meter">
@@ -61,14 +65,14 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
         {dots.map((dot, i) => {
           const dotAngle = dot.t * arcAngle
           const dist = Math.abs(dotAngle - needleDeg)
-          const lit = active && dist < 3.5
+          const lit = active && dist < 2
 
           return (
             <circle
               key={i}
               cx={dot.x}
               cy={dot.y}
-              r={3.5}
+              r={3}
               fill={lit ? dot.color : '#333'}
               filter={lit ? 'url(#glow)' : undefined}
               opacity={lit ? 1 : 0.4}
@@ -76,28 +80,21 @@ function ArcMeter({ cents, active }: { cents: number; active: boolean }) {
           )
         })}
 
-        {/* Center tick */}
-        {(() => {
-          const tickRad = degToRad(0)
-          const innerR = arcRadius - 8
-          const outerR = arcRadius + 8
-          return (
-            <line
-              x1={cx + innerR * Math.sin(tickRad)}
-              y1={arcCenterY - innerR * Math.cos(tickRad)}
-              x2={cx + outerR * Math.sin(tickRad)}
-              y2={arcCenterY - outerR * Math.cos(tickRad)}
-              stroke={inTune ? '#00ff88' : '#444'}
-              strokeWidth={1.5}
-              strokeLinecap="round"
-            />
-          )
-        })()}
-
-        {/* Needle — from below viewport up through dots */}
+        {/* Center tick mark */}
         <line
           x1={cx}
-          y1={pivotY}
+          y1={dots[Math.floor(totalDots / 2)].y - 7}
+          x2={cx}
+          y2={dots[Math.floor(totalDots / 2)].y + 7}
+          stroke={inTune ? '#00ff88' : '#444'}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+        />
+
+        {/* Needle — from bottom of viewBox up to tip near dots */}
+        <line
+          x1={bottomX}
+          y1={height}
           x2={tipX}
           y2={tipY}
           stroke={inTune ? '#00ff88' : '#ff6644'}
