@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 320px;
   transform-style: preserve-3d;
-  transform: rotateX(5deg);
+  transform: rotateX(8deg);
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -35,6 +35,9 @@
     /* Bottom bevel — light catching the underside edge */
     inset 0 -1px 0 rgba(255, 255, 255, 0.06),
     inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+    /* Top edge highlight — light catching the bevel */
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 2px 4px rgba(255, 255, 255, 0.04),
     /* Side edges */
     inset 1px 0 0 var(--side-accent, rgba(255, 80, 80, 0.08)),
     inset -1px 0 0 rgba(0, 0, 0, 0.3);
@@ -85,8 +88,8 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 25%, transparent 85%, rgba(0,0,0,0.15) 93%, rgba(0,0,0,0.3) 100%),
-    linear-gradient(90deg, rgba(0,0,0,0.12) 0%, transparent 8%, transparent 92%, rgba(0,0,0,0.12) 100%);
+    linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 20%, transparent 78%, rgba(0,0,0,0.12) 85%, rgba(0,0,0,0.35) 94%, rgba(0,0,0,0.55) 100%),
+    linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 6%, transparent 94%, rgba(0,0,0,0.2) 100%);
   border-radius: 16px;
   pointer-events: none;
 }
