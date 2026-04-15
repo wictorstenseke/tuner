@@ -15,17 +15,17 @@
   width: 100%;
   max-width: 320px;
   transform-style: preserve-3d;
-  transform: rotateX(2deg);
+  transform: rotateX(4deg);
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── Side Wall (visible thickness) ── */
 .pedal-side {
   position: absolute;
-  inset: 4px 2px -56px 2px;
+  inset: 4px 3px -40px 3px;
   border-radius: 14px;
   background: var(--side-gradient, linear-gradient(180deg, #6e0c0c 0%, #3a0505 40%, #1a0202 100%));
-  transform: translateZ(-2px);
+  transform: translateZ(-2px) rotateX(-1deg);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.6),
     0 20px 50px rgba(0, 0, 0, 0.35),
