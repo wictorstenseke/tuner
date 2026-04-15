@@ -15,7 +15,6 @@
   width: 100%;
   max-width: 320px;
   transform-style: preserve-3d;
-  transform: rotateX(2deg);
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -85,7 +84,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 30%, transparent 80%, rgba(0,0,0,0.1) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 25%, transparent 85%, rgba(0,0,0,0.15) 93%, rgba(0,0,0,0.3) 100%);
   border-radius: 16px;
   pointer-events: none;
 }
