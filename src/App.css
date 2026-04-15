@@ -84,7 +84,9 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 25%, transparent 85%, rgba(0,0,0,0.15) 93%, rgba(0,0,0,0.3) 100%);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 25%, transparent 85%, rgba(0,0,0,0.15) 93%, rgba(0,0,0,0.3) 100%),
+    linear-gradient(90deg, rgba(0,0,0,0.12) 0%, transparent 8%, transparent 92%, rgba(0,0,0,0.12) 100%);
   border-radius: 16px;
   pointer-events: none;
 }
